@@ -1,12 +1,12 @@
-import Header from "@/components/header";
-import Todo from "@/components/task_list/tasks";
+import Header from "@/components/task-list/TaskListHeader";
+import Todo from "@/components/task-list/TaskListClient";
 import Wrapper from "@/components/wrapper";
+import TaskListClient from "@/components/task-list/TaskListClient";
 
 export default function Home() {
   return (
     <Wrapper>
-      <Header/>
-      <Todo/>
+      <TaskListClient/>
     </Wrapper>
   );
 }
