@@ -1,29 +1,22 @@
 'use client'
-
 import React, { useActionState, useState } from 'react'
-import { login } from '@/lib/actions/login'
+import { signup } from '@/lib/actions/signup'
 
 const initialState = {
-  message: '',
-  success: false
+  success: false,
+  message: ''
 }
 
-
-function LoginForm() {
-  const [state, formAction, isPending] = useActionState(login, initialState)
+function SignupForm() {
+  const [state, formAction, isPending] = useActionState(signup, initialState)
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   return (
     <form action={formAction}>
       <label>
         {' '}
-        Email:
-        <input
-          type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          name="email"
-        />
+        Your Email:
+        <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} name="email" />
       </label>
       <label>
         {' '}
@@ -35,9 +28,10 @@ function LoginForm() {
           name="password"
         />
       </label>
-      <button type="submit"> Log in</button>
+      <button type="submit"> Sign up </button>
+      <p> {state?.message} </p>
     </form>
   )
 }
 
-export default LoginForm
+export default SignupForm
