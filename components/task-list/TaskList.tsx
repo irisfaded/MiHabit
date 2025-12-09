@@ -12,7 +12,6 @@ function TaskList() {
     bt2: [4, 5],
     bt3: []
   })
-
   const [groupOrder, setGroupOrder] = useState(() => Object.keys(tasks))
   return (
 
