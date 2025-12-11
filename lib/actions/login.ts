@@ -5,6 +5,8 @@ import { sql } from 'slonik'
 import { auth } from '@/lib/auth/firebase-auth'
 import { signInWithEmailAndPassword } from '@firebase/auth'
 import { FirebaseError } from 'firebase/app'
+import { redirect } from 'next/navigation'
+import jwt from 'jsonwebtoken'
 
 const UserCredentialSchema = z.object({
   // letters, numbers, some symbols, min 3 max 30
@@ -31,22 +33,47 @@ export const login = async (prevState: any, formData: FormData) => {
   }
 
   // login with firebase
+  let firebaseUid = null
   try {
     const userCredential = await signInWithEmailAndPassword(auth, userObject.email, userObject.password)
-    console.log(userCredential.user)
+    firebaseUid = userCredential.user.uid
   } catch (error) {
     if (error instanceof FirebaseError) {
       const errorCode = error.code
       console.log(error.message)
       // list of possible errors
-      //   switch (errorCode) {
-      //     case 'auth/email-already-in-use':
-      //       return { success: false, message: 'This email is already registered' }
-      //     case 'auth/invalid-email':
-      //       return { success: false, message: 'Invalid email address' }
+      switch (errorCode) {
+        case 'auth/email-already-in-use':
+          return { success: false, message: 'This email is already registered' }
+        case 'auth/invalid-email':
+          return { success: false, message: 'Invalid email address' }
+      }
     }
     return { success: false, message: 'Login failed!' }
   }
+  // get user postgres id based on fb id
+  const id = await pool.maybeOneFirst(sql.type(z.number())` SELECT id FROM users WHERE firebase_uid=${firebaseUid}`)
+  if (!id) return { success: false, message: 'User not found.' }
 
-  return { success: true, message: 'Successful login!' }
+  // create access and refresh tokens for the user
+  let accessToken = jwt.sign(
+    {
+      userId: id
+    },
+    process.env.ACCESS_TOKEN_SECRET!,
+    { expiresIn: '30s' }
+  )
+
+  let refreshToken = jwt.sign(
+    {
+      userId: id,
+      type: 'refresh'
+    },
+    process.env.REFRESH_TOKEN_SECRET!,
+    { expiresIn: '7d' }
+  )
+
+  
+
+  return redirect('/')
 }

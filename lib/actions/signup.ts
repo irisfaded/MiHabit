@@ -7,7 +7,7 @@ import { auth } from '@/lib/auth/firebase-auth'
 import { FirebaseError } from 'firebase/app'
 
 
-export const UserCredentialSchema = z.object({
+const UserCredentialSchema = z.object({
   // letters, numbers, some symbols, min 3 max 30
   email: z.string().trim().email('Invalid email format'),
   password: z
@@ -34,6 +34,7 @@ export const signup = async (prevState: any, formData: FormData) => {
   // insert into firebase
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, userObject.email, userObject.password)
+    // for testing
     console.log(userCredential.user)
   } catch (error) {
     if(error instanceof FirebaseError) {
