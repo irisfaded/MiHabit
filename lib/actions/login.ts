@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth/firebase-auth'
 import { signInWithEmailAndPassword } from '@firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 
 const UserCredentialSchema = z.object({
@@ -52,9 +53,9 @@ export const login = async (prevState: any, formData: FormData) => {
     return { success: false, message: 'Login failed!' }
   }
   // get user postgres id based on fb id
-  const id = await pool.maybeOneFirst(sql.type(z.number())` SELECT id FROM users WHERE firebase_uid=${firebaseUid}`)
-  if (!id) return { success: false, message: 'User not found.' }
-
+  const userId = await pool.one(sql.type(z.object({id: z.number()}))` SELECT id FROM users WHERE firebase_uid=${firebaseUid}`)
+  if (!userId) return { success: false, message: 'User not found.' }
+  const id = userId.id
   // create access and refresh tokens for the user
   let accessToken = jwt.sign(
     {
@@ -73,6 +74,32 @@ export const login = async (prevState: any, formData: FormData) => {
     { expiresIn: '7d' }
   )
 
+  // set cookies with jwts
+  const cookieStore = await cookies()
+  cookieStore.set({ 
+    name: "access",
+    value: accessToken,
+    httpOnly: true,
+    sameSite: "lax",
+    domain: "",
+    path: "/"
+  })
+  cookieStore.set({ 
+    name: "refresh",
+    value: refreshToken,
+    httpOnly: true,
+    sameSite: "lax",
+    domain: "",
+    path: "/"
+  })
+
+  // delete existing refresh token from database and replace with new token
+  try {
+    await pool.query(sql.unsafe`UPDATE users SET refresh_token=${refreshToken} WHERE id=${id}`)
+  } catch (error){
+    console.log(error)
+    return { success: false, message: error }
+  }
   
 
   return redirect('/')
