@@ -62,7 +62,7 @@ export const login = async (prevState: any, formData: FormData) => {
       userId: id
     },
     process.env.ACCESS_TOKEN_SECRET!,
-    { expiresIn: '30s' }
+    { expiresIn: '10s' }
   )
 
   let refreshToken = jwt.sign(
