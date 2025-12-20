@@ -43,17 +43,17 @@ export const proxy = async (req: NextRequest) => {
     switch (error.name) {
       // if the token is malformed or has an invalid signature
       case 'JsonWebTokenError':
-        const response = NextResponse.redirect(new URL('/login', req.url))
-        response.cookies.delete('access')
-        response.cookies.delete('refresh')
+        const responseRedirect = NextResponse.redirect(new URL('/login', req.url))
+        responseRedirect.cookies.delete('access')
+        responseRedirect.cookies.delete('refresh')
         console.log('access token error malformed')
         console.log(error)
-        return response
+        return responseRedirect
       // if the token is expired
       case 'TokenExpiredError':
         console.log('token expired error')
         // checking if refreshSt
-        if (refreshStatus.userId != null) {
+        
           // creating new access token
           let accessToken = jwt.sign(
             {
@@ -76,12 +76,17 @@ export const proxy = async (req: NextRequest) => {
           })
           console.log('new token: ' + accessToken)
           console.log('successful token refresh')
-          return response
         }
     }
-  }
+  
   console.log('passed')
-  return NextResponse.next()
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('user-id', refreshStatus.userId.toString())
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders
+    }
+  })
 }
 
 export const config = {
