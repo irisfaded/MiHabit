@@ -1,13 +1,10 @@
 'use client'
-
 import React, { useActionState, useState } from 'react'
 import { login } from '@/lib/actions/login'
 
 const initialState = {
-  message: '',
-  success: false
+  message: ''
 }
-
 
 function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, initialState)
@@ -36,6 +33,7 @@ function LoginForm() {
         />
       </label>
       <button type="submit"> Log in</button>
+      <p> {state?.message as string} </p>
     </form>
   )
 }

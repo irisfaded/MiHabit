@@ -5,6 +5,7 @@ import { sql } from 'slonik'
 import { createUserWithEmailAndPassword, getAuth } from '@firebase/auth'
 import { auth } from '@/lib/auth/firebase-auth'
 import { FirebaseError } from 'firebase/app'
+import { redirect } from 'next/navigation'
 
 
 const UserCredentialSchema = z.object({
@@ -27,7 +28,7 @@ export const signup = async (prevState: any, formData: FormData) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.log(error.issues)
-      return { success: false, message: error.issues[0].message } // returns first error in array
+      return { message: error.issues[0].message } // returns first error in array
     }
   }
 
@@ -42,12 +43,12 @@ export const signup = async (prevState: any, formData: FormData) => {
         // list of possible errors
         switch(errorCode) {
             case 'auth/email-already-in-use':
-                return { success: false, message: 'This email is already registered' };
+                return { message: 'This email is already registered' };
             case 'auth/invalid-email':
-                return { success: false, message: 'Invalid email address' };
+                return { message: 'Invalid email address' };
         }
     }
-    return { success: false, message: 'Signup failed!'}
+    return { message: 'Signup failed!'}
   }
-  return { success: true, message: 'Successful signup!' }
+  return redirect('/login')
 }

@@ -3,7 +3,6 @@ import React, { useActionState, useState } from 'react'
 import { signup } from '@/lib/actions/signup'
 
 const initialState = {
-  success: false,
   message: ''
 }
 

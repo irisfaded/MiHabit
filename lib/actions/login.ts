@@ -29,7 +29,7 @@ export const login = async (prevState: any, formData: FormData) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.log(error.issues)
-      return { success: false, message: error.issues[0].message } // returns first error in array
+      return { message: error.issues[0].message } // returns first error in array
     }
   }
 
@@ -45,16 +45,18 @@ export const login = async (prevState: any, formData: FormData) => {
       // list of possible errors
       switch (errorCode) {
         case 'auth/email-already-in-use':
-          return { success: false, message: 'This email is already registered' }
+          return { message: 'This email is already registered' }
         case 'auth/invalid-email':
-          return { success: false, message: 'Invalid email address' }
+          return { message: 'Invalid email address' }
+        case 'auth/invalid-credential':
+          return { message: 'Incorrect credentials'}
       }
     }
-    return { success: false, message: 'Login failed!' }
+    return { message: 'Login failed!' }
   }
   // get user postgres id based on fb id
   const userId = await pool.one(sql.type(z.object({id: z.number()}))` SELECT id FROM users WHERE firebase_uid=${firebaseUid}`)
-  if (!userId) return { success: false, message: 'User not found.' }
+  if (!userId) return { message: 'User not found.' }
   const id = userId.id
   // create access and refresh tokens for the user
   let accessToken = jwt.sign(
@@ -98,7 +100,7 @@ export const login = async (prevState: any, formData: FormData) => {
     await pool.query(sql.unsafe`UPDATE users SET refresh_token=${refreshToken} WHERE id=${id}`)
   } catch (error){
     console.log(error)
-    return { success: false, message: error }
+    return { message: error }
   }
   
 

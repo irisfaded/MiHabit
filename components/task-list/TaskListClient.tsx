@@ -6,7 +6,7 @@ import { getBigTasks } from '@/lib/actions/task-list'
 import { pool, sql } from '@/lib/db/db_connection'
 import z from 'zod'
 import { headers } from 'next/headers'
-import { TaskListSchema } from '@/lib/types/taskListType'
+import { TaskListSchema } from '@/lib/types/taskListSchema'
 
 async function TaskListClient() {
   const requestHeaders = await headers()
